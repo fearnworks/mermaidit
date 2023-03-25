@@ -23,8 +23,9 @@ Mermaid It also supports generating diagrams from GitLab repositories. To genera
 
 ```bash
 python run.py --url <repository_url>
-This will clone the repository to a local directory and generate the diagrams as described above.
+
 ```
+This will clone the repository to a local directory and generate the diagrams as described above.
 
 ## Supported Diagrams
 Mermaid It currently supports generating class diagrams.
