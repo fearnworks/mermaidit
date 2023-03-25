@@ -1,8 +1,8 @@
 import argparse
 
-from code_analysis import analyze_code_base
-from file_operations import ask_output_location, browse_directory, clone_repo
-from mermaid_parser import MermaidParser
+from .code_analysis import analyze_code_base
+from .file_operations import ask_output_location, browse_directory, clone_repo
+from .mermaid_parser import MermaidParser
 
 
 def main():
