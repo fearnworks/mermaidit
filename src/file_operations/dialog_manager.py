@@ -37,7 +37,7 @@ class DialogManager:
 
         dialog = tk.Toplevel()
         dialog.title("Output Location")
-        dialog.geometry("350x150")
+        dialog.geometry("350x250")
 
         label = tk.Label(dialog, text="Where would you like to save the diagrams?")
         label.pack(pady=10)
