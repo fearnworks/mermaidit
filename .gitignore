@@ -153,3 +153,4 @@ cython_debug/
 #.idea/
 pyvenv.cfg
 data/*.md
+data/settings.txt
