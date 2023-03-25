@@ -1,6 +1,6 @@
 import pytest
 
-from ..mermaid_parser import MermaidParser
+from src.mermaid_parser.mermaid_parser import MermaidParser
 
 
 def test_empty_class():

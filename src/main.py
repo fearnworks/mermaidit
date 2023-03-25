@@ -1,11 +1,19 @@
 import argparse
+import os
+import shutil
 
-from .code_analysis import analyze_code_base
-from .file_operations import ask_output_location, browse_directory, clone_repo
-from .mermaid_parser import MermaidParser
+from src.code_analyzer.code_analysis import CodeAnalyzer
+from src.file_operations.file_operations import FileOperations
 
 
 def main():
+    """Entry point for the Mermaid diagram generation tool.
+
+    Parses command-line arguments to determine whether to clone a GitLab repository or analyze a local codebase.
+    Prompts the user to select an output location for the generated diagrams.
+    Creates a CodeAnalyzer object and calls its analyze method to generate the Mermaid diagrams.
+    Cleans up the cloned repository (if created) after analysis is complete.
+    """
     parser = argparse.ArgumentParser(
         description="Generate Mermaid class diagrams from a Python code base"
     )
@@ -27,20 +35,20 @@ def main():
 
     if args.url:
         local_path = os.path.join(os.path.abspath("."), "temp_repo")
-        clone_repo(args.url, local_path)
+        FileOperations.clone_repo(args.url, local_path)
     else:
         if args.local == "BROWSE":
-            local_path = browse_directory()
+            local_path = FileOperations.browse_directory()
         else:
             local_path = args.local
 
-    output_dir = ask_output_location()
-    analyze_code_base(local_path, output_dir)
+    output_dir = FileOperations.ask_output_location()
+
+    analyzer = CodeAnalyzer(local_path, output_dir)
+    analyzer.analyze()
 
     if args.url:
         # Cleanup cloned repository if created
-        import shutil
-
         shutil.rmtree(local_path)
 
 
