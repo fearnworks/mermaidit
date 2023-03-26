@@ -1,3 +1,4 @@
+import logging
 import os
 
 from src.file_operations.file_operations import FileOperations
@@ -6,17 +7,25 @@ from src.mermaid_parser.mermaid_sequence_parser import MermaidSequenceParser
 
 
 class CodeAnalyzer:
+
     """A class for analyzing a codebase and generating Mermaid diagrams for class definitions and sequence diagrams.
 
     Attributes:
+        logger (logging.Logger): The logger for the `CodeAnalyzer` class.
         local_path (str): The path to the codebase to analyze.
         output_dir (str, optional): The directory to save the generated diagrams in.
             If not specified, the diagrams will be saved in the same directory as the source files.
     """
 
+    logger: logging.Logger
+    output_dir: str
+    local_path: str
+
     def __init__(self, local_path, output_dir=None):
         self.local_path = local_path
         self.output_dir = output_dir
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
 
     def analyze(self):
         """Analyzes the codebase and generates Mermaid diagrams for class definitions and sequence diagrams.
@@ -76,6 +85,9 @@ class CodeAnalyzer:
         """
         if os.path.basename(file_path) == "main.py":
             mermaid_sequence_parser = MermaidSequenceParser()
+            self.logger.debug(f"Generating sequence diagram for {file_path}")
+            mermaid_sequence_parser.parse_main_entrypoint(file_path)
+            self.logger.debug(f"Sequence diagram generated for {file_path}")
             mermaid_sequence_parser.parse_main_function(file_path)
 
             sequence_diagram = mermaid_sequence_parser.get_sequence_diagram()

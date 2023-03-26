@@ -1,4 +1,5 @@
-import re
+import ast
+import logging
 
 
 class MermaidParser:
@@ -12,6 +13,8 @@ class MermaidParser:
         Initializes the `MermaidParser` object with an empty class diagram.
         """
         self.class_diagram = "classDiagram\n"
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
 
     def parse_file(self, file_path):
         """
@@ -26,41 +29,59 @@ class MermaidParser:
             self.parse_classes(content)
 
     def parse_classes(self, content):
-        """
-        Parses a string for class definitions and updates the class diagram with
-        the parsed information.
+        tree = ast.parse(content)
+        self.logger.debug(f"Parsed AST tree: {tree}")
 
-        Args:
-            content (str): The content to parse for class definitions.
-        """
-        class_definitions = re.findall(
-            r"^class\s+(\w+)(\s*\((\w+)\))?:", content, re.MULTILINE
-        )
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                class_name = node.name
+                self.logger.debug(f"Found class: {class_name}")
 
-        for class_def in class_definitions:
-            class_name, _, base_class = class_def
-            self.class_diagram += f"class {class_name} {{\n"
-
-            methods = re.findall(
-                r"^\s+def\s+(\w+)\s*\((.*?)\)(\s*->\s*(\w+))?:", content, re.MULTILINE
-            )
-            for method in methods:
-                method_name, params, _, return_type = method
-                if return_type:
-                    self.class_diagram += (
-                        f"    +{method_name}({params}) : {return_type}\n"
+                base_class = None
+                if node.bases:
+                    base_class = (
+                        node.bases[0].id
+                        if isinstance(node.bases[0], ast.Name)
+                        else None
                     )
-                else:
-                    self.class_diagram += f"    +{method_name}({params})\n"
+                self.class_diagram += f"class {class_name} {{\n"
 
-            properties = re.findall(r"^\s+([a-zA-Z_]\w+)\s*=", content, re.MULTILINE)
-            for prop in properties:
-                self.class_diagram += f"    +{prop}\n"
+                for child in ast.iter_child_nodes(node):
+                    if isinstance(child, ast.FunctionDef):
+                        method_name = child.name
+                        self.logger.debug(f"Found method: {method_name}")
 
-            self.class_diagram += "}\n"
+                        params = ", ".join(
+                            arg.arg for arg in child.args.args if arg.arg != "self"
+                        )
+                        return_type = None
+                        if child.returns and isinstance(child.returns, ast.Name):
+                            return_type = child.returns.id
+                        if return_type:
+                            self.class_diagram += (
+                                f"    +{method_name}({params}) : {return_type}\n"
+                            )
+                        else:
+                            self.class_diagram += f"    +{method_name}({params})\n"
 
-            if base_class:
-                self.class_diagram += f"{base_class} <|-- {class_name}\n"
+                    elif isinstance(child, ast.Assign) or isinstance(
+                        child, ast.AnnAssign
+                    ):
+                        if isinstance(child, ast.Assign):
+                            targets = child.targets
+                        else:
+                            targets = [child.target]
+
+                        for target in targets:
+                            if isinstance(target, ast.Name):
+                                attribute_name = target.id
+                                self.logger.debug(f"Found attribute: {attribute_name}")
+                                self.class_diagram += f"    +{attribute_name}\n"
+
+                self.class_diagram += "}\n"
+
+                if base_class:
+                    self.class_diagram += f"{base_class} <|-- {class_name}\n"
 
     def get_diagram(self):
         """
@@ -69,4 +90,5 @@ class MermaidParser:
         Returns:
             str: The generated class diagram.
         """
+        self.logger.debug(f"Generated class diagram: {self.class_diagram}")
         return self.class_diagram
