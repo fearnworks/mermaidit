@@ -26,7 +26,8 @@ class MermaidSequenceParser(MermaidParser):
         """
         for participant in self.participants:
             self.sequence_diagram = (
-                f"participant {participant} as {participant}\n" + self.sequence_diagram
+                self.sequence_diagram
+                + f"    participant {participant} as {participant}\n"
             )
 
     def process_function_calls(
@@ -44,9 +45,10 @@ class MermaidSequenceParser(MermaidParser):
             if isinstance(node, ast.Call):
                 callee = self.get_callee(node.func, imports)
                 if callee is not None:
+                    callee_class_name = callee.split(".")[-1]
                     self.participants.add(caller_name)
                     self.participants.add(callee)
-                    self.sequence_diagram += f"    {caller_name} ->>+ {callee}: {callee}({', '.join([ast.dump(arg) for arg in node.args])})\n"
+                    self.sequence_diagram += f"    {caller_name} ->>+ {callee_class_name}: {callee_class_name}({', '.join([ast.dump(arg) for arg in node.args])})\n"
 
     def process_branches(
         self, caller_name: str, main_function_node: ast.AST, imports: Dict[str, str]
@@ -152,7 +154,7 @@ class MermaidSequenceParser(MermaidParser):
         tree, imports = self.parse_file(main_file_path)
 
         main_function_node = None
-
+        self.add_participants()
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name == "main":
                 main_function_node = node
@@ -160,8 +162,6 @@ class MermaidSequenceParser(MermaidParser):
 
         if main_function_node:
             self.traverse_calls(None, [main_function_node], imports)
-
-        self.add_participants()
 
     def extract_calls(self, node):
         visitor = CallVisitor(self.get_callee)
@@ -184,6 +184,7 @@ class MermaidSequenceParser(MermaidParser):
                 break
 
         if main_function_node:
+            self.add_participants()
             self.process_function_calls(
                 main_function_node.name, main_function_node, imports
             )
