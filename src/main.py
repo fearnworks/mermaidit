@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import shutil
 
@@ -53,4 +54,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     main()
