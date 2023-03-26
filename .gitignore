@@ -154,3 +154,4 @@ cython_debug/
 pyvenv.cfg
 data/*.md
 data/settings.txt
+example_sequence.md

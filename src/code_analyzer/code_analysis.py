@@ -86,7 +86,7 @@ class CodeAnalyzer:
         if os.path.basename(file_path) == "main.py":
             mermaid_sequence_parser = MermaidSequenceParser()
             self.logger.debug(f"Generating sequence diagram for {file_path}")
-            mermaid_sequence_parser.parse_main_entrypoint(file_path)
+            mermaid_sequence_parser.parse_file(file_path)
             self.logger.debug(f"Sequence diagram generated for {file_path}")
             mermaid_sequence_parser.parse_main_function(file_path)
 
