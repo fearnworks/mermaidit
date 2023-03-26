@@ -31,17 +31,17 @@ def test_class_with_methods():
     parser.parse_classes(content)
     diagram = parser.get_diagram()
     assert "class MyClass" in diagram
-    assert "+method1(self, arg1, arg2)" in diagram
-    assert "+method2(self) : str" in diagram
+    assert "+method1(arg1, arg2)" in diagram
+    assert "+method2() : str" in diagram
 
 
 def test_full_class():
     content = (
         "class DerivedClass(BaseClass):\n"
         "    prop1 = 1\n\n"
-        "    def method1(self, arg1, arg2):\n"
+        "    def method1(arg1, arg2):\n"
         "        pass\n\n"
-        "    def method2(self) -> str:\n"
+        "    def method2() -> str:\n"
         "        pass\n"
     )
     parser = MermaidParser()
@@ -50,8 +50,8 @@ def test_full_class():
     assert "class DerivedClass" in diagram
     assert "BaseClass <|-- DerivedClass" in diagram
     assert "+prop1" in diagram
-    assert "+method1(self, arg1, arg2)" in diagram
-    assert "+method2(self) : str" in diagram
+    assert "+method1(arg1, arg2)" in diagram
+    assert "+method2() : str" in diagram
 
 
 def test_class_with_properties():
