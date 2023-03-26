@@ -114,3 +114,18 @@ class MyClass:
     expected2 = "    +attr2\n"
     assert expected1 in parser.class_diagram
     assert expected2 in parser.class_diagram
+
+
+def test_process_class_methods_with_type_info():
+    parser = MermaidParser()
+    code = """
+import ast
+
+class MyClass:
+    def my_method(arg1: int, arg2: ast.FunctionDef) -> str:
+        pass
+"""
+    node = ast.parse(code).body[1].body[0]
+    parser.process_class_methods(node)
+    expected = "    +my_method(arg1: int, arg2: ast.FunctionDef) : str\n"
+    assert expected in parser.class_diagram
