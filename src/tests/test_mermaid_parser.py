@@ -1,3 +1,5 @@
+import ast
+
 import pytest
 
 from src.mermaid_parser.mermaid_parser import MermaidParser
@@ -22,9 +24,9 @@ def test_class_with_base():
 def test_class_with_methods():
     content = (
         "class MyClass:\n"
-        "    def method1(self, arg1, arg2):\n"
+        "    def method1(arg1, arg2):\n"
         "        pass\n\n"
-        "    def method2(self) -> str:\n"
+        "    def method2() -> str:\n"
         "        pass\n"
     )
     parser = MermaidParser()
@@ -62,3 +64,53 @@ def test_class_with_properties():
     assert "class MyClass" in diagram
     assert "+prop1" in diagram
     assert "+prop2" in diagram
+
+
+def test_extract_base_class():
+    parser = MermaidParser()
+    code = """
+class Derived(Base):
+    pass
+"""
+    node = ast.parse(code).body[0]
+    assert parser.extract_base_class(node) == "Base"
+
+
+def test_extract_base_class_no_base():
+    parser = MermaidParser()
+    code = """
+class Simple:
+    pass
+"""
+    node = ast.parse(code).body[0]
+    assert parser.extract_base_class(node) is None
+
+
+def test_process_class_methods():
+    parser = MermaidParser()
+    code = """
+class MyClass:
+    def my_method(arg1, arg2):
+        pass
+"""
+    node = ast.parse(code).body[0].body[0]
+    parser.process_class_methods(node)
+    expected = "    +my_method(arg1, arg2)\n"
+    assert expected in parser.class_diagram
+
+
+def test_process_class_attributes():
+    parser = MermaidParser()
+    code = """
+class MyClass:
+    attr1 = 1
+    attr2: int
+"""
+    node1 = ast.parse(code).body[0].body[0]
+    node2 = ast.parse(code).body[0].body[1]
+    parser.process_class_attributes(node1)
+    parser.process_class_attributes(node2)
+    expected1 = "    +attr1\n"
+    expected2 = "    +attr2\n"
+    assert expected1 in parser.class_diagram
+    assert expected2 in parser.class_diagram
