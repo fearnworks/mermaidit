@@ -16,7 +16,7 @@ class MermaidParser:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
-    def parse_file(self, file_path):
+    def parse_file(self, file_path: str):
         """
         Parses a Python file for class definitions and updates the class diagram
         with the parsed information.
@@ -28,7 +28,7 @@ class MermaidParser:
             content = f.read()
             self.parse_classes(content)
 
-    def parse_classes(self, content):
+    def parse_classes(self, content: str):
         """
         Parses the content of a class file and builds a Mermaid class diagram.
 
@@ -60,7 +60,7 @@ class MermaidParser:
                 if base_class:
                     self.class_diagram += f"{base_class} <|-- {class_name}\n"
 
-    def extract_base_class(self, node):
+    def extract_base_class(self, node: ast.ClassDef):
         """Extracts the base class from an AST ClassDef node.
 
         Args:
@@ -76,7 +76,7 @@ class MermaidParser:
             )
         return base_class
 
-    def process_class_methods(self, child):
+    def process_class_methods(self, child: ast.FunctionDef):
         """Processes class methods and appends them to the class diagram.
 
         Args:
@@ -85,16 +85,33 @@ class MermaidParser:
         method_name = child.name
         self.logger.debug(f"Found method: {method_name}")
 
-        params = ", ".join(arg.arg for arg in child.args.args if arg.arg != "self")
-        return_type = None
-        if child.returns and isinstance(child.returns, ast.Name):
-            return_type = child.returns.id
-        if return_type:
-            self.class_diagram += f"    +{method_name}({params}) : {return_type}\n"
-        else:
-            self.class_diagram += f"    +{method_name}({params})\n"
+        # Extracting argument types
+        params = []
+        for arg in child.args.args:
+            if arg.arg != "self":
+                arg_type = ""
+                if arg.annotation:
+                    if isinstance(arg.annotation, ast.Name):
+                        arg_type = f": {arg.annotation.id}"
+                    elif isinstance(arg.annotation, ast.Attribute):
+                        arg_type = f": {arg.annotation.value.id}.{arg.annotation.attr}"
+                params.append(f"{arg.arg}{arg_type}")
 
-    def process_class_attributes(self, child):
+        # Extracting return type
+        return_type = None
+        if child.returns:
+            if isinstance(child.returns, ast.Name):
+                return_type = child.returns.id
+            elif isinstance(child.returns, ast.Attribute):
+                return_type = f"{child.returns.value.id}.{child.returns.attr}"
+
+        params_str = ", ".join(params)
+        if return_type:
+            self.class_diagram += f"    +{method_name}({params_str}) : {return_type}\n"
+        else:
+            self.class_diagram += f"    +{method_name}({params_str})\n"
+
+    def process_class_attributes(self, child: ast.Assign or ast.AnnAssign):
         """Processes class attributes and appends them to the class diagram.
 
         Args:

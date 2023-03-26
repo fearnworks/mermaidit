@@ -4,9 +4,9 @@ class CodeAnalyzer {
     +logger
     +output_dir
     +local_path
-    +__init__(local_path, output_dir)
+    +__init__(local_path: str, output_dir: str)
     +analyze()
-    +generate_class_diagram(file_path, file)
-    +generate_sequence_diagram(file_path)
+    +generate_class_diagram(file_path: str, file: str)
+    +generate_sequence_diagram(file_path: str)
 }
 ```

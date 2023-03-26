@@ -21,7 +21,7 @@ class CodeAnalyzer:
     output_dir: str
     local_path: str
 
-    def __init__(self, local_path, output_dir=None):
+    def __init__(self, local_path: str, output_dir: str = None):
         self.local_path = local_path
         self.output_dir = output_dir
         self.logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class CodeAnalyzer:
                     self.generate_class_diagram(file_path, file)
                     self.generate_sequence_diagram(file_path)
 
-    def generate_class_diagram(self, file_path, file):
+    def generate_class_diagram(self, file_path: str, file: str):
         """Generates a Mermaid class diagram for the given file.
 
         Args:
@@ -77,7 +77,7 @@ class CodeAnalyzer:
 
         print(f"Mermaid class diagram for {file} saved at {output_file_path}")
 
-    def generate_sequence_diagram(self, file_path):
+    def generate_sequence_diagram(self, file_path: str):
         """Generates a Mermaid sequence diagram for the given file.
 
         Args:
