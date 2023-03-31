@@ -1,1 +1,2 @@
 from src.mermaid_parser.mermaid_parser import MermaidParser
+from src.mermaid_parser.mermaid_sequence_parser import MermaidSequenceParser

@@ -1,3 +1,4 @@
+import ast
 import logging
 import os
 
@@ -84,22 +85,27 @@ class CodeAnalyzer:
             file_path (str): The path to the Python file to analyze.
         """
         if os.path.basename(file_path) == "main.py":
+            # Create an instance of the MermaidSequenceParser class
             mermaid_sequence_parser = MermaidSequenceParser()
             self.logger.debug(f"Generating sequence diagram for {file_path}")
-            mermaid_sequence_parser.parse_file(file_path)
+
+            # Parse the code into an abstract syntax tree (AST)
+            with open(file_path, "r", encoding="utf-8") as file:
+                code = file.read()
+                tree = ast.parse(code)
+
+            # Use the parser to generate the mermaid sequence diagram
+            mermaid_sequence_diagram = mermaid_sequence_parser.parse(tree)
             self.logger.debug(f"Sequence diagram generated for {file_path}")
-            mermaid_sequence_parser.parse_main_function(file_path)
 
-            sequence_diagram = mermaid_sequence_parser.get_sequence_diagram()
-
-            if sequence_diagram.strip() == "":
+            if mermaid_sequence_diagram.strip() == "":
                 print(
                     f"No function calls found in {os.path.basename(file_path)}, skipping."
                 )
                 return
 
             wrapped_sequence_diagram = FileOperations.wrap_mermaid_code(
-                sequence_diagram
+                mermaid_sequence_diagram
             )
 
             if self.output_dir:
